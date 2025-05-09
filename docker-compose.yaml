@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    image: rchd88/store-box
+    ports:
+      - '8000:8000'
+    volumes:
+      - "./backend:/app"
+      - "/app/node_modules"

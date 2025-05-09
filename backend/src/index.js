@@ -1,12 +1,18 @@
 const app = require("./app");
-
-// set .env config
 const env = require("./config/env");
+const { testConnection } = require("./models");
 
-// mongoose connection
+async function initializeApp() {
+    // Test koneksi database
+    await testConnection();
 
-// server
-const port = env("APP_PORT") || 8000;
-const server = app.listen(port, () => {
-    console.log(`App running on http://localhost:${port}`);
-})
+    const port = env("APP_PORT") || 8000;
+    const server = app.listen(port, () => {
+        console.log(`App running on http://localhost:${port}`);
+    })
+}
+
+initializeApp().catch(err => {
+    console.error('Application failed to start:', err);
+    process.exit(1);
+});

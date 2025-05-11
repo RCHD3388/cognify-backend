@@ -4,7 +4,7 @@ services:
     build: ./backend
     image: rchd88/store-box
     ports:
-      - '8000:8000'
+      - '3000:3000'
     volumes:
       - "./backend:/app"
       - "/app/node_modules"

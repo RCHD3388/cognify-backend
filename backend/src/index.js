@@ -6,7 +6,7 @@ async function initializeApp() {
     // Test koneksi database
     await testConnection();
 
-    const port = env("APP_PORT") || 8000;
+    const port = env("APP_PORT") || 3000;
     const server = app.listen(port, () => {
         console.log(`App running on http://localhost:${port}`);
     })

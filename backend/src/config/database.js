@@ -1,4 +1,4 @@
-const env = require("./env");
+const env = require('./env');
 
 class DatabaseConfig {
   constructor() {
@@ -9,7 +9,7 @@ class DatabaseConfig {
         database: process.env.DB_NAME_DEV || 'cognifydb_development',
         host: process.env.DB_HOST_DEV || '127.0.0.1',
         dialect: process.env.DB_DIALECT_DEV || 'mysql',
-        port: process.env.DB_PORT_DEV || '3306'
+        port: process.env.DB_PORT_DEV || '3306',
       },
       test: {
         username: process.env.DB_USER_TEST || process.env.DB_USERNAME,
@@ -17,7 +17,7 @@ class DatabaseConfig {
         database: process.env.DB_NAME_TEST || 'cognifydb_test',
         host: process.env.DB_HOST_TEST || process.env.DB_HOST,
         dialect: process.env.DB_DIALECT_TEST || 'mysql',
-        port: process.env.DB_PORT_TEST || '3306'
+        port: process.env.DB_PORT_TEST || '3306',
       },
       production: {
         username: process.env.DB_USER_PROD,
@@ -25,8 +25,8 @@ class DatabaseConfig {
         database: process.env.DB_NAME_PROD || 'cognifydb_production',
         host: process.env.DB_HOST_PROD,
         dialect: process.env.DB_DIALECT_PROD || 'mysql',
-        port: process.env.DB_PORT_PROD || '3306'
-      }
+        port: process.env.DB_PORT_PROD || '3306',
+      },
     };
   }
 
@@ -46,5 +46,5 @@ module.exports = {
     host: databaseConfig.getConfig('host'),
     port: databaseConfig.getConfig('port'),
     dialect: databaseConfig.getConfig('dialect'),
-  }
+  },
 };

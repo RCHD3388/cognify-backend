@@ -14,9 +14,16 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   User.init({
-    firebaseId: { type: DataTypes.STRING, primaryKey: true },
+    firebaseId: { 
+      type: DataTypes.STRING, 
+      primaryKey: true 
+    },
     email: DataTypes.STRING,
-    name: DataTypes.STRING
+    name: DataTypes.STRING,
+    role: { 
+      type: DataTypes.STRING,
+      defaultValue: 'user'
+    },
   }, {
     sequelize,
     modelName: 'User',

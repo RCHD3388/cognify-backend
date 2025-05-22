@@ -4,28 +4,10 @@ const { setBaseResponse, RSNC, setFailedResponse } = require("../utils/api/apiRe
 const AppError = require("../utils/appError");
 const { db } = require("../models");
 
+const authController = require("../controllers/AuthController");
+
 const router = Router();
 
-router.post("/register", catchAsync(async (req, res, next) => {
-  const { firebaseId, email, name } = req.body;
-  console.log(req.body);
-  try {
-    if(firebaseId !== undefined && email !== undefined && name !== undefined) {
-      const newUser = await db.User.create({ firebaseId, email, name });
-      return setBaseResponse(res, RSNC.CREATED, {
-        message: "User created successfully",
-        data: newUser
-      })
-    }else{
-      return next(new AppError("Missing required fields", RSNC.BAD_REQUEST));
-    }
-  } catch (error) {
-    console.error(error);
-    return next(
-      new AppError('There was an error. Try again later!'),
-      500
-    );
-  }
-}));
+router.post("/register", authController.register);
 
 module.exports = router;

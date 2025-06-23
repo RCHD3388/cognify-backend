@@ -3,6 +3,6 @@ const profileController = require("../controllers/ProfileController");
 
 const router = Router();
 
-router.get("/user/:firebaseId", profileController.getProfile);
+router.get("/getprofile/:firebaseId", profileController.getProfile);
 
 module.exports = router;

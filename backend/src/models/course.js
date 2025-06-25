@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "course_owner", // Kolom di tabel Course yang menyimpan FK
         as: "Owner", // Alias untuk asosiasi ini
       });
+
+      Course.hasMany(models.CourseDiscussion, {
+        foreignKey: "course_id",
+      });
     }
   }
   Course.init(

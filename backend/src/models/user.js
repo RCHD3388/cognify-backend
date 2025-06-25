@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "course_owner",
         as: "OwnedCourses",
       });
+
+      User.hasMany(models.CourseDiscussion, {
+        foreignKey: "user_id",
+      });
     }
   }
   User.init(

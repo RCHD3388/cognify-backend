@@ -3,6 +3,77 @@ const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 
+// --- Controller untuk membuat Course baru ---
+exports.createCourse = catchAsync(async (req, res, next) => {
+  // Data course dari body request
+  const {
+    course_name,
+    course_description,
+    course_owner, // Pastikan ini adalah user_id dari user yang membuat course
+    category,
+    difficulty_level,
+    estimated_duration,
+    price,
+  } = req.body;
+
+  let thumbnailUrl = null;
+  if (req.file) {
+    thumbnailUrl = `/uploads/course_thumbnails/${req.file.filename}`;
+  }
+
+  return res.status(200).json(thumbnailUrl);
+
+  // if (
+  //   !course_name ||
+  //   !course_description ||
+  //   !course_owner ||
+  //   !category ||
+  //   !difficulty_level ||
+  //   !estimated_duration ||
+  //   price === undefined
+  // ) {
+  //   return next(
+  //     new AppError("Missing required course fields", RSNC.BAD_REQUEST)
+  //   );
+  // }
+
+  try {
+    // const newCourse = await db.Course.create({
+    //   course_name,
+    //   course_description,
+    //   course_owner, // Ini haruslah user_id yang valid
+    //   category,
+    //   difficulty_level,
+    //   estimated_duration,
+    //   price: parseFloat(price), // Pastikan harga adalah angka
+    //   thumbnail_url: thumbnailUrl, // Simpan URL thumbnail
+    //   // createdAt dan updatedAt akan diisi otomatis oleh Sequelize
+    // });
+
+    // return setBaseResponse(res, RSNC.CREATED, {
+    //   message: "Course created successfully",
+    //   data: newCourse,
+    // });
+    return res.status(200).json("ok");
+  } catch (error) {
+    console.error("ERROR CREATING COURSE �", error);
+    // Jika error karena validasi DB atau constraint
+    if (
+      error.name === "SequelizeUniqueConstraintError" ||
+      error.name === "SequelizeValidationError"
+    ) {
+      const messages = error.errors.map((err) => err.message).join(", ");
+      return next(new AppError(messages, RSNC.BAD_REQUEST));
+    }
+    // Error lainnya
+    return next(
+      new AppError(
+        "Failed to create course. Please try again later.",
+        RSNC.INTERNAL_SERVER_ERROR
+      )
+    );
+  }
+});
 exports.getAllCourse = catchAsync(async (req, res, next) => {
   try {
     const course = await db.Course.findAll();

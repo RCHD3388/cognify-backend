@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       course_rating: DataTypes.DECIMAL(10, 2),
+      course_price: DataTypes.NUMBER,
     },
     {
       sequelize,

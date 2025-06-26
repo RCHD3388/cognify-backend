@@ -27,6 +27,9 @@ module.exports = {
       course_rating: {
         type: Sequelize.DECIMAL(10, 2),
       },
+      course_price: {
+        type: Sequelize.INT,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

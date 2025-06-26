@@ -2,7 +2,7 @@ const { db } = require('../models');
 const { setBaseResponse, RSNC } = require('../utils/api/apiResponse');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-
+const { v4: uuidv4 } = require('uuid');
 exports.createCourse = catchAsync(async (req, res, next) => {
   const {
     course_name,
@@ -31,20 +31,21 @@ exports.createCourse = catchAsync(async (req, res, next) => {
 
   try {
     const newCourse = await db.Course.create({
+      course_id: uuidv4(), // <-- 2. Buat dan masukkan ID unik di sini
       course_name,
       course_description,
       course_owner,
       course_rating: 0.0,
       course_price,
       category_id,
-      thumbnail_url: thumbnailUrl,
+      thumbnail: thumbnailUrl,
     });
 
-    // return setBaseResponse(res, RSNC.CREATED, {
-    //   message: "Course created successfully",
-    //   data: newCourse,
-    // });
-    return res.status(200).json('ok');
+    // Respons sukses Anda
+    return setBaseResponse(res, RSNC.CREATED, {
+      message: 'Course created successfully',
+      data: newCourse,
+    });
   } catch (error) {
     console.error('ERROR CREATING COURSE �', error);
     // Jika error karena validasi DB atau constraint

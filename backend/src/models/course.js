@@ -27,9 +27,10 @@ module.exports = (sequelize, DataTypes) => {
   Course.init(
     {
       course_id: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
+        allowNull: false,
       },
       course_name: DataTypes.STRING,
       course_description: DataTypes.STRING,
@@ -43,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      thumbnail: DataTypes.STRING,
     },
     {
       sequelize,

@@ -1,8 +1,11 @@
-"use strict";
+'use strict';
+
+const category = require('../models/category');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Courses", {
+    await queryInterface.createTable('Courses', {
       course_id: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -18,17 +21,26 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false, // Sesuaikan jika pemilik bisa null
         references: {
-          model: "Users", // Merujuk ke tabel 'Users'
-          key: "firebaseId", // Merujuk ke kolom 'firebaseId'
+          model: 'Users', // Merujuk ke tabel 'Users'
+          key: 'firebaseId', // Merujuk ke kolom 'firebaseId'
         },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE", // Jika User (owner) dihapus, Course miliknya juga dihapus.
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE', // Jika User (owner) dihapus, Course miliknya juga dihapus.
       },
       course_rating: {
         type: Sequelize.DECIMAL(10, 2),
       },
       course_price: {
-        type: Sequelize.INT,
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      category_id: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      thumbnail: {
+        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,
@@ -42,6 +54,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Courses");
+    await queryInterface.dropTable('Courses');
   },
 };

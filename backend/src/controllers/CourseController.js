@@ -1,19 +1,15 @@
-const { db } = require("../models");
-const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
-const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
+const { db } = require('../models');
+const { setBaseResponse, RSNC } = require('../utils/api/apiResponse');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
-// --- Controller untuk membuat Course baru ---
 exports.createCourse = catchAsync(async (req, res, next) => {
-  // Data course dari body request
   const {
     course_name,
     course_description,
-    course_owner, // Pastikan ini adalah user_id dari user yang membuat course
-    category,
-    difficulty_level,
-    estimated_duration,
-    price,
+    course_owner,
+    course_price,
+    category_id,
   } = req.body;
 
   let thumbnailUrl = null;
@@ -21,54 +17,48 @@ exports.createCourse = catchAsync(async (req, res, next) => {
     thumbnailUrl = `/uploads/course_thumbnails/${req.file.filename}`;
   }
 
-  return res.status(200).json(thumbnailUrl);
-
-  // if (
-  //   !course_name ||
-  //   !course_description ||
-  //   !course_owner ||
-  //   !category ||
-  //   !difficulty_level ||
-  //   !estimated_duration ||
-  //   price === undefined
-  // ) {
-  //   return next(
-  //     new AppError("Missing required course fields", RSNC.BAD_REQUEST)
-  //   );
-  // }
+  if (
+    !course_name ||
+    !course_description ||
+    !course_owner ||
+    !course_price ||
+    !category_id
+  ) {
+    return next(
+      new AppError('Missing required course fields', RSNC.BAD_REQUEST)
+    );
+  }
 
   try {
-    // const newCourse = await db.Course.create({
-    //   course_name,
-    //   course_description,
-    //   course_owner, // Ini haruslah user_id yang valid
-    //   category,
-    //   difficulty_level,
-    //   estimated_duration,
-    //   price: parseFloat(price), // Pastikan harga adalah angka
-    //   thumbnail_url: thumbnailUrl, // Simpan URL thumbnail
-    //   // createdAt dan updatedAt akan diisi otomatis oleh Sequelize
-    // });
+    const newCourse = await db.Course.create({
+      course_name,
+      course_description,
+      course_owner,
+      course_rating: 0.0,
+      course_price,
+      category_id,
+      thumbnail_url: thumbnailUrl,
+    });
 
     // return setBaseResponse(res, RSNC.CREATED, {
     //   message: "Course created successfully",
     //   data: newCourse,
     // });
-    return res.status(200).json("ok");
+    return res.status(200).json('ok');
   } catch (error) {
-    console.error("ERROR CREATING COURSE �", error);
+    console.error('ERROR CREATING COURSE �', error);
     // Jika error karena validasi DB atau constraint
     if (
-      error.name === "SequelizeUniqueConstraintError" ||
-      error.name === "SequelizeValidationError"
+      error.name === 'SequelizeUniqueConstraintError' ||
+      error.name === 'SequelizeValidationError'
     ) {
-      const messages = error.errors.map((err) => err.message).join(", ");
+      const messages = error.errors.map((err) => err.message).join(', ');
       return next(new AppError(messages, RSNC.BAD_REQUEST));
     }
     // Error lainnya
     return next(
       new AppError(
-        "Failed to create course. Please try again later.",
+        'Failed to create course. Please try again later.',
         RSNC.INTERNAL_SERVER_ERROR
       )
     );
@@ -79,15 +69,15 @@ exports.getAllCourse = catchAsync(async (req, res, next) => {
     const course = await db.Course.findAll();
     if (course) {
       return setBaseResponse(res, RSNC.OK, {
-        message: "Course retrieved successfully",
+        message: 'Course retrieved successfully',
         data: course,
       });
     } else {
-      return next(new AppError("Course not found", RSNC.NOT_FOUND));
+      return next(new AppError('Course not found', RSNC.NOT_FOUND));
     }
   } catch (error) {
     console.error(error);
-    return next(new AppError("There was an error. Try again later!"), 500);
+    return next(new AppError('There was an error. Try again later!'), 500);
   }
 });
 
@@ -98,21 +88,21 @@ exports.getUserCourse = catchAsync(async (req, res, next) => {
 
     if (!user) {
       return setBaseResponse(res, RSNC.NOT_FOUND, {
-        message: "User not found",
+        message: 'User not found',
         data: course,
       });
     }
 
-    console.log("tes");
+    console.log('tes');
 
     const enrolledCourses = await user.getEnrolledCourses({
       attributes: [
-        "course_id",
-        "course_name",
-        "course_description",
-        "course_rating",
+        'course_id',
+        'course_name',
+        'course_description',
+        'course_rating',
       ],
-      joinTableAttributes: ["createdAt"],
+      joinTableAttributes: ['createdAt'],
     });
 
     return setBaseResponse(res, RSNC.OK, {
@@ -121,7 +111,7 @@ exports.getUserCourse = catchAsync(async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
-    return next(new AppError("There was an error. Try again later!"), 500);
+    return next(new AppError('There was an error. Try again later!'), 500);
   }
 });
 
@@ -153,7 +143,7 @@ exports.createReply = async (req, res) => {
   if (!parentPost) {
     return next(
       new AppError(
-        "The discussion you are trying to reply to does not exist.",
+        'The discussion you are trying to reply to does not exist.',
         RSNC.NOT_FOUND
       )
     );
@@ -183,7 +173,7 @@ exports.getDiscussionsForCourse = async (req, res, next) => {
     if (!courseId) {
       // Menggunakan 'next' untuk meneruskan error ke middleware error handler
 
-      return next(new AppError("Course ID is required.", RSNC.BAD_REQUEST));
+      return next(new AppError('Course ID is required.', RSNC.BAD_REQUEST));
     }
 
     const discussions = await db.CourseDiscussion.findAll({
@@ -194,22 +184,22 @@ exports.getDiscussionsForCourse = async (req, res, next) => {
       include: [
         {
           model: db.User, // Sertakan informasi penulis
-          as: "Author",
-          attributes: ["name", "firebaseId"], // Pilih atribut yang mau ditampilkan
+          as: 'Author',
+          attributes: ['name', 'firebaseId'], // Pilih atribut yang mau ditampilkan
         },
         {
           model: db.CourseDiscussion, // Sertakan semua balasan
-          as: "Replies",
+          as: 'Replies',
           include: {
             // Di dalam balasan, sertakan juga penulisnya
             model: db.User,
-            as: "Author",
-            attributes: ["name", "firebaseId"],
+            as: 'Author',
+            attributes: ['name', 'firebaseId'],
           },
-          order: [["createdAt", "ASC"]], // Urutkan balasan dari yang terlama
+          order: [['createdAt', 'ASC']], // Urutkan balasan dari yang terlama
         },
       ],
-      order: [["createdAt", "DESC"]], // Urutkan post utama dari yang terbaru
+      order: [['createdAt', 'DESC']], // Urutkan post utama dari yang terbaru
     });
 
     // Jika tidak ada diskusi, Anda bisa memilih untuk mengembalikan array kosong
@@ -218,7 +208,7 @@ exports.getDiscussionsForCourse = async (req, res, next) => {
       // Ini jarang terjadi, findAll mengembalikan [] jika tidak ada data, bukan null
 
       return next(
-        new AppError("Discussions not found for this course.", RSNC.NOT_FOUND)
+        new AppError('Discussions not found for this course.', RSNC.NOT_FOUND)
       );
     }
 
@@ -231,12 +221,12 @@ exports.getDiscussionsForCourse = async (req, res, next) => {
     // --- Blok catch untuk menangani semua error yang terjadi di blok try ---
 
     // Log error ke konsol untuk debugging
-    console.error("ERROR IN getDiscussionsForCourse 💥", error);
+    console.error('ERROR IN getDiscussionsForCourse 💥', error);
 
     // Teruskan error ke middleware error handler global Anda
     // Ini akan memastikan respons error yang konsisten di seluruh API
     return next(
-      new AppError("Something went very wrong!", RSNC.INTERNAL_SERVER_ERROR)
+      new AppError('Something went very wrong!', RSNC.INTERNAL_SERVER_ERROR)
     );
   }
 };

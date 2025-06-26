@@ -20,6 +20,22 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.CourseDiscussion, {
         foreignKey: "user_id",
       });
+
+      // 1. Daftar pengguna yang DI-FOLLOW oleh user ini
+      User.belongsToMany(models.User, {
+        through: models.Follows,
+        foreignKey: "followerId", // Kunci di tabel Follows yang merujuk ke user ini
+        otherKey: "followingId", // Kunci yang merujuk ke user yang di-follow
+        as: "Following", // Alias: user.getFollowing()
+      });
+
+      // 2. Daftar pengguna yang MENGIKUTI user ini (Followers)
+      User.belongsToMany(models.User, {
+        through: models.Follows,
+        foreignKey: "followingId", // Kunci di tabel Follows yang merujuk ke user ini
+        otherKey: "followerId", // Kunci yang merujuk ke user yang me-follow
+        as: "Followers", // Alias: user.getFollowers()
+      });
     }
   }
   User.init(

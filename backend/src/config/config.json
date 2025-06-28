@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "root",
-    "password": "",
+    "username": "admin",
+    "password": "adminpassword",
     "database": "cognifydb_development",
-    "host": "127.0.0.1",
+    "host": "db-project-mdp.c0er4slcxkeh.us-east-1.rds.amazonaws.com",
     "dialect": "mysql",
     "port": 3306
   }

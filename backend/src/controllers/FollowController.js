@@ -5,7 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 
 // Aksi untuk user (follower) mengikuti user lain (following)
 exports.followUser = catchAsync(async (req, res, next) => {
-  const followerId = req.user.firebaseId; // User yang sedang login
+  const followerId = req.params.firebaseId; // User yang sedang login
   const { userIdToFollow } = req.params; // User yang akan di-follow
 
   if (followerId === userIdToFollow) {
@@ -26,7 +26,7 @@ exports.followUser = catchAsync(async (req, res, next) => {
 
 // Aksi untuk berhenti mengikuti user lain
 exports.unfollowUser = catchAsync(async (req, res, next) => {
-  const followerId = req.user.firebaseId;
+  const followerId = req.params.firebaseId;
   const { userIdToUnfollow } = req.params;
 
   const follower = await db.User.findByPk(followerId);

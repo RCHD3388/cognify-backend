@@ -14,10 +14,13 @@ router.get("/:userId/following", followController.getFollowing);
 router.get("/:userId/followers", followController.getFollowers);
 
 // POST /api/v1/users/:userIdToFollow/follow -> User yang login akan me-follow user :userIdToFollow
-router.post("/:userIdToFollow/follow", followController.followUser);
+router.post("/:userIdToFollow/follow/:firebaseId", followController.followUser);
 
 // DELETE /api/v1/users/:userIdToUnfollow/unfollow -> User yang login akan berhenti me-follow user :userIdToUnfollow
-router.delete("/:userIdToUnfollow/unfollow", followController.unfollowUser);
+router.delete(
+  "/:userIdToUnfollow/unfollow/:firebaseId",
+  followController.unfollowUser
+);
 
 router.get("/search", userController.searchUsers);
 

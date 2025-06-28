@@ -3,6 +3,8 @@ const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const { v4: uuidv4 } = require("uuid");
+const { Op } = require("sequelize");
+
 exports.createCourse = catchAsync(async (req, res, next) => {
   const {
     course_name,
@@ -84,19 +86,20 @@ exports.getAllCourse = catchAsync(async (req, res, next) => {
 
 exports.getUserEnrolledCourse = catchAsync(async (req, res, next) => {
   const { firebaseId } = req.params;
+  // Ambil query pencarian dari query parameter, contoh: ?q=design
+  const { q } = req.query;
+
   try {
     const user = await db.User.findByPk(firebaseId);
 
     if (!user) {
       return setBaseResponse(res, RSNC.NOT_FOUND, {
         message: "User not found",
-        data: course,
       });
     }
 
-    console.log("tes");
-
-    const enrolledCourses = await user.getEnrolledCourses({
+    // --- LOGIKA PENCARIAN DITAMBAHKAN DI SINI ---
+    const courseQueryOptions = {
       attributes: [
         "course_id",
         "course_name",
@@ -108,19 +111,27 @@ exports.getUserEnrolledCourse = catchAsync(async (req, res, next) => {
         "thumbnail",
       ],
       joinTableAttributes: ["createdAt"],
-    });
+    };
+
+    // Jika ada query pencarian (q), tambahkan klausa 'where'
+    if (q && q.trim() !== "") {
+      courseQueryOptions.where = {
+        course_name: {
+          [Op.like]: `%${q}%`, // Cari kursus yang namanya mengandung string 'q'
+        },
+      };
+    }
+    // --- AKHIR LOGIKA PENCARIAN ---
+
+    const enrolledCourses = await user.getEnrolledCourses(courseQueryOptions);
 
     return setBaseResponse(res, RSNC.OK, {
       message: `Successfully retrieved enrolled courses for user ${user.name}`,
       data: enrolledCourses,
     });
-    return setBaseResponse(res, RSNC.CREATED, {
-      message: 'Course created successfully',
-      data: newCourse,
-    });
   } catch (error) {
     console.error(error);
-    return next(new AppError('There was an error. Try again later!'), 500);
+    return next(new AppError("There was an error. Try again later!"), 500);
   }
 });
 
@@ -131,7 +142,7 @@ exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
 
     if (!user) {
       return setBaseResponse(res, RSNC.NOT_FOUND, {
-        message: 'User not found',
+        message: "User not found",
         data: course,
       });
     }
@@ -141,14 +152,14 @@ exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
         course_owner: firebaseId,
       },
       attributes: [
-        'course_id',
-        'course_name',
-        'course_description',
-        'course_rating',
-        'thumbnail',
-        'course_owner',
-        'course_price',
-        'category_id',
+        "course_id",
+        "course_name",
+        "course_description",
+        "course_rating",
+        "thumbnail",
+        "course_owner",
+        "course_price",
+        "category_id",
       ],
     });
 

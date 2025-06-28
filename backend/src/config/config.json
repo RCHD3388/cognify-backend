@@ -1,19 +1,9 @@
-// {
-//   "development": {
-//     "username": "root",
-//     "password": "",
-//     "database": "cognifydb_development",
-//     "host": "127.0.0.1",
-//     "dialect": "mysql",
-//     "port": 3306
-//   }
-// }
 {
   "development": {
-    "username": "admin",
-    "password": "adminpassword",
+    "username": "root",
+    "password": "",
     "database": "cognifydb_development",
-    "host": "db-project-mdp.c0er4slcxkeh.us-east-1.rds.amazonaws.com",
+    "host": "127.0.0.1",
     "dialect": "mysql",
     "port": 3306
   }

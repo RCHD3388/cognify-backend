@@ -82,7 +82,7 @@ exports.getAllCourse = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.getUserCourse = catchAsync(async (req, res, next) => {
+exports.getUserEnrolledCourse = catchAsync(async (req, res, next) => {
   const { firebaseId } = req.params;
   try {
     const user = await db.User.findByPk(firebaseId);
@@ -109,6 +109,48 @@ exports.getUserCourse = catchAsync(async (req, res, next) => {
     return setBaseResponse(res, RSNC.OK, {
       message: `Successfully retrieved enrolled courses for user ${user.name}`,
       data: enrolledCourses,
+    });
+    return setBaseResponse(res, RSNC.CREATED, {
+      message: 'Course created successfully',
+      data: newCourse,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(new AppError('There was an error. Try again later!'), 500);
+  }
+});
+
+exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
+  const { firebaseId } = req.params;
+  try {
+    const user = await db.User.findByPk(firebaseId);
+
+    if (!user) {
+      return setBaseResponse(res, RSNC.NOT_FOUND, {
+        message: 'User not found',
+        data: course,
+      });
+    }
+
+    const ownedCourses = await db.Course.findAll({
+      where: {
+        course_owner: firebaseId,
+      },
+      attributes: [
+        'course_id',
+        'course_name',
+        'course_description',
+        'course_rating',
+        'thumbnail',
+        'course_owner',
+        'course_price',
+        'category_id',
+      ],
+    });
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: `Successfully retrieved owned courses for user ${user.name}`,
+      data: ownedCourses,
     });
   } catch (error) {
     console.error(error);

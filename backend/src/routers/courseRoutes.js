@@ -7,7 +7,10 @@ const multer = require('multer');
 const fs = require('fs'); // <-- 1. Impor modul 'fs' (File System)
 
 // Konfigurasi penyimpanan Multer yang sudah diperbaiki
-const uploadDir = path.join(__dirname, '../public/uploads/course_thumbnails');
+const uploadDir = path.join(
+  __dirname,
+  '../../public/uploads/course_thumbnails'
+);
 
 // Pastikan direktori ada, jika tidak, buat secara rekursif
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -37,7 +40,11 @@ router.post(
 );
 
 router.get('/getAllCourse', courseController.getAllCourse);
-router.get('/getUserCourse/:firebaseId', courseController.getUserCourse);
+router.get(
+  '/getUserCourse/:firebaseId',
+  courseController.getUserEnrolledCourse
+);
+router.get('/courses/:firebaseId', courseController.getUserCreatedCourse);
 router.get('/discussion/:courseId', courseController.getDiscussionsForCourse);
 router.post('/discussion/:firebaseId', courseController.createDiscussionPost);
 router.post(

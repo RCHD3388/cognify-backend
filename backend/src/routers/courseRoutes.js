@@ -52,5 +52,9 @@ router.post(
   '/discussion/:parentId/reply/:firebaseId',
   courseController.createReply
 );
+router.post(
+  '/:courseId/payment', 
+  courseController.createPayment
+);
 
 module.exports = router;

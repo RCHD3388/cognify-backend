@@ -8,5 +8,6 @@ router.use("/smart", require("./learningPathRoutes"));
 router.use("/profile", require("./profileRoutes"));
 router.use("/course", require("./courseRoutes"));
 router.use("/users", require("./followRoutes"));
+router.use("/midtrans", require("./midtransRoutes"));
 
 module.exports = router;

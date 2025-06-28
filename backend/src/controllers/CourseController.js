@@ -4,6 +4,7 @@ const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
+const { snap } = require('../services/midtransService');
 
 exports.createCourse = catchAsync(async (req, res, next) => {
   const {
@@ -317,4 +318,62 @@ exports.getCourseById = catchAsync(async (req, res, next) => {
     console.error("ERROR FETCHING COURSE BY ID 💥", error);
     return next(new AppError("There was an error fetching the course. Please try again."), RSNC.INTERNAL_SERVER_ERROR);
   }
+});
+
+exports.createPayment = catchAsync(async (req, res, next) => {
+  const { courseId } = req.params;
+  const userId = req.body.firebaseId; // Asumsi Anda punya data user dari middleware auth
+
+  // 1. Dapatkan detail course dan user dari database
+  const course = await db.Course.findByPk(courseId);
+  const user = await db.User.findByPk(userId);
+
+  if (!course) {
+    return next(new AppError('Course not found', RSNC.NOT_FOUND));
+  }
+  if (!user) {
+    return next(new AppError('User not found', RSNC.NOT_FOUND));
+  }
+
+  const shortUUID = uuidv4().substring(0, 18); // Ambil 18 karakter pertama dari UUID
+  const orderId = `CGN-${Date.now()}-${shortUUID}`; // Hasilnya sekitar 1 + 4 + 13 + 1 + 18 = 37 karakter
+
+  // ... sisa kode Anda sama persis
+  // 3. Buat parameter untuk Midtrans
+  const parameter = {
+    transaction_details: {
+      order_id: orderId,
+      gross_amount: course.course_price,
+    },
+    item_details: [{
+      id: course.course_id,
+      price: course.course_price,
+      quantity: 1,
+      name: course.course_name,
+    }],
+    customer_details: {
+      first_name: user.name,
+      email: user.email,
+    },
+  };
+
+  // 4. Panggil Midtrans Snap API
+  const transaction = await snap.createTransaction(parameter);
+
+  // 5. Simpan catatan transaksi ke database Anda
+  await db.Transaction.create({
+    order_id: orderId,
+    course_id: courseId,
+    user_id: userId,
+    gross_amount: course.course_price,
+    status: 'pending',
+    payment_token: transaction.token,
+  });
+
+  // 6. Kirim token kembali ke client (aplikasi Android)
+  return setBaseResponse(res, RSNC.CREATED, {
+    message: "Payment token created successfully",
+    token: transaction.token,
+    redirect_url: transaction.redirect_url,
+  });
 });

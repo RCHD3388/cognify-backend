@@ -36,6 +36,12 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: "followerId", // Kunci yang merujuk ke user yang me-follow
         as: "Followers", // Alias: user.getFollowers()
       });
+
+      User.hasMany(models.Smart, {
+        foreignKey: 'owner',
+        sourceKey: 'firebaseId',
+        as: 'smarts', // opsional
+      });
     }
   }
   User.init(

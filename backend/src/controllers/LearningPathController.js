@@ -1,29 +1,123 @@
 const { db } = require("../models");
 const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
-const { default: axios } = require("axios");
+const { default: axios, create } = require("axios");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const { finalUrl } = require("../utils/geminiapi/controller");
+const { generateCompletePrompt, generateOutput, parseLearningPath } = require("../utils/geminiapi/controller");
 const env = require("../config/env");
+const { main_template } = require("../utils/geminiapi/template");
 
 exports.getLearningPaths = catchAsync(async (req, res, next) => {
-  console.log(env("GEMINI_API_KEY"));
+  let topic = req.body.topic || "Web Development";
+  let level = req.body.level || "menengah";
+  let additional_prompt = req.body.additional_prompt || "berikan learning path dengan steps sekitar 5-6 step saja.";
+
   try {
-    const response = await axios.post(
-      `${finalUrl()}`,
-      {
-        contents: [{ parts: [{ text: "jelaskan secara singkat padat dan jelas apa itu Babi" }] }]
-      }
-    );
-    // console.log(response.data);
-    const result = response.data.candidates[0].content.parts[0].text;
-    console.log(result);
+    let placeholder = { topic, level, additional_prompt }
+    let completePrompt = generateCompletePrompt(main_template, placeholder);
+    let result = await generateOutput(completePrompt);
+    let formattedResult = parseLearningPath(result);
+    formattedResult.level = level;
 
     return setBaseResponse(res, RSNC.OK, {
       message: "Learning paths retrieved successfully",
-      data: [
-        prompt_response = result
-      ],
+      data: formattedResult,
+    });
+  } catch (error) {
+
+    console.error(error);
+    return next(
+      new AppError('There was an error. Try again later!', 401),
+      401
+    );
+  }
+});
+
+const getFirstTwoCharUppercase = (text) => {
+  if (!text) return "";
+  return text.substring(0, 2).toUpperCase();
+}
+
+const getDateString = (date) => {
+  const dateString = new Date(date).toLocaleString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const [tanggal, bulan, tahun] = dateString.split(' ');
+  return `${tanggal} ${bulan} ${tahun}`;
+}
+
+const getFormattedResult = (learningPath, learningPathSteps, comments = [], likes = []) => {
+  return {
+    id: learningPath.id,
+    title: learningPath.title,
+    description: learningPath.description,
+    author_id: learningPath.user.firebaseId,
+    author_name: learningPath.user.name,
+    author_email: learningPath.user.email,
+    createdAt: getDateString(learningPath.createdAt), // Placeholder, you can implement a real time ago function
+    level: learningPath.level,
+    tags: learningPath.tags ? learningPath.tags.split(", ").map(tag => tag.trim()) : [],
+    likes: likes.map(like => ({
+      userId: like.userId,
+      smartId: like.smartId,
+    })),
+    comments: comments.map(comment => ({
+      userId: comment.userId,
+      smartId: comment.smartId,
+      content: comment.content,
+      createdAt: getDateString(comment.createdAt), // Placeholder for comment creation date
+    })), // Placeholder for comments
+    steps: learningPathSteps.map(step => ({
+      smartId: step.smartId,
+      stepNumber: step.stepNumber,
+      title: step.title,
+      description: step.description,
+      estimatedTime: step.estimatedTime
+    }))
+  }
+}
+
+exports.saveLearningPath = catchAsync(async (req, res, next) => {
+  const { title, description, author, level, tags, steps } = req.body;
+  console.log("Received data:", req.body);
+
+  try {
+    let newSmart = await db.Smart.create({
+      title,
+      description,
+      level,
+      tags: tags.join(", "), // Convert array to string
+      owner: author, // Assuming 'author' is the Firebase ID of the user
+    });
+
+    let stepPromises = steps.map(async (step) => {
+      let newStep = await db.smartstep.create({
+        title: step.title,
+        description: step.description,
+        estimatedTime: step.estimatedTime,
+        stepNumber: step.stepNumber,
+        smartId: newSmart.id,
+      });
+      return newStep;
+    });
+    let newSteps = await Promise.all(stepPromises);
+
+    let currentSmart = await db.Smart.findOne({
+      where: { title, owner: author },
+      include: [{
+        model: db.User,
+        as: 'user'
+      }]
+    });
+
+    let result = getFormattedResult(currentSmart, newSteps);
+    console.log("Formatted result:", result);
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Learning path saved successfully",
+      data: result,
     });
   } catch (error) {
     console.error(error);
@@ -34,23 +128,30 @@ exports.getLearningPaths = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.saveLearningPath = catchAsync(async (req, res, next) => {
-  const { userId } = req.params;
-  const { learningPathId } = req.body;
-  console.log(req.params, req.body);
+exports.getAllLearningPaths = catchAsync(async (req, res, next) => {
   try {
-    return setBaseResponse(res, RSNC.SUCCESS, {
-      message: "Learning path saved successfully",
-      data: {
-        userId,
-        learningPathId,
-      },
+    let learningPaths = await db.Smart.findAll({
+      include: [{
+        model: db.User,
+        as: 'user'
+      }],
+    });
+    let formattedLearningPaths = learningPaths.map(learningPath => {
+      let learningPathSteps = learningPath.smartsteps || [];
+      let comments = learningPath.comments || [];
+      let likes = learningPath.likes || [];
+      return getFormattedResult(learningPath, learningPathSteps, comments, likes);
+    });
+    console.log("Formatted learning paths:", formattedLearningPaths);
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Learning paths retrieved successfully",
+      data: formattedLearningPaths,
     });
   } catch (error) {
     console.error(error);
     return next(
-      new AppError('There was an error. Try again later!'),
-      500
+      new AppError('There was an error. Try again later!', 401),
+      401
     );
   }
 });

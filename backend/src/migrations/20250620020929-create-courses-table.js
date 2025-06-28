@@ -27,6 +27,10 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE', // Jika User (owner) dihapus, Course miliknya juga dihapus.
       },
+      course_owner_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       course_rating: {
         type: Sequelize.DECIMAL(10, 2),
       },

@@ -38,6 +38,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      course_owner_name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       course_rating: DataTypes.DECIMAL(10, 2),
       course_price: DataTypes.NUMBER,
       category_id: {

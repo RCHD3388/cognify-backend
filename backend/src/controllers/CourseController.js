@@ -12,6 +12,7 @@ exports.createCourse = catchAsync(async (req, res, next) => {
     course_owner,
     course_price,
     category_id,
+    course_owner_name,
   } = req.body;
 
   let thumbnailUrl = null;
@@ -24,7 +25,8 @@ exports.createCourse = catchAsync(async (req, res, next) => {
     !course_description ||
     !course_owner ||
     !course_price ||
-    !category_id
+    !category_id ||
+    !course_owner_name 
   ) {
     return next(
       new AppError("Missing required course fields", RSNC.BAD_REQUEST)
@@ -40,6 +42,7 @@ exports.createCourse = catchAsync(async (req, res, next) => {
       course_rating: 0.0,
       course_price,
       category_id,
+      course_owner_name,
       thumbnail: thumbnailUrl,
     });
 
@@ -109,6 +112,7 @@ exports.getUserEnrolledCourse = catchAsync(async (req, res, next) => {
         "category_id",
         "course_rating",
         "thumbnail",
+        "course_owner_name",
       ],
       joinTableAttributes: ["createdAt"],
     };
@@ -160,6 +164,7 @@ exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
         "course_owner",
         "course_price",
         "category_id",
+        "course_owner_name",
       ],
     });
 

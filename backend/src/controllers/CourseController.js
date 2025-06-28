@@ -288,3 +288,28 @@ exports.getDiscussionsForCourse = async (req, res, next) => {
     );
   }
 };
+
+exports.getCourseById = catchAsync(async (req, res, next) => {
+  const { courseId } = req.params; // Ambil courseId dari parameter URL
+
+  try {
+    const course = await db.Course.findByPk(courseId, {
+      // Anda bisa menyertakan relasi lain di sini jika perlu,
+      // misalnya data instructor dari tabel User
+      // include: [{ model: db.User, as: 'Instructor' }]
+    });
+
+    if (!course) {
+      return next(new AppError("Course with that ID not found", RSNC.NOT_FOUND));
+    }
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Course details retrieved successfully",
+      data: course, // Kirim data course yang ditemukan
+    });
+
+  } catch (error) {
+    console.error("ERROR FETCHING COURSE BY ID 💥", error);
+    return next(new AppError("There was an error fetching the course. Please try again."), RSNC.INTERNAL_SERVER_ERROR);
+  }
+});

@@ -21,4 +21,9 @@ router.delete("/:userIdToUnfollow/unfollow", followController.unfollowUser);
 
 router.get("/search", userController.searchUsers);
 
+router.get("/users/:userId/following/count", followController.countFollowing);
+
+// GET /api/v1/users/:userId/followers/count -> Hitung jumlah followers user :userId
+router.get("/users/:userId/followers/count", followController.countFollowers);
+
 module.exports = router;

@@ -67,3 +67,64 @@ exports.getFollowers = catchAsync(async (req, res, next) => {
 
   return setBaseResponse(res, RSNC.OK, { data: followersList });
 });
+
+exports.countFollowing = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await db.User.findByPk(userId);
+
+    if (!user) {
+      return next(new AppError("User not found.", RSNC.NOT_FOUND));
+    }
+
+    // Gunakan "magic method" count<Alias> dari Sequelize
+    const followingCount = await user.countFollowing();
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Successfully retrieved following count.",
+      data: {
+        userId: userId,
+        count: followingCount,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR IN countFollowing 💥", error);
+    return next(
+      new AppError(
+        "Something went wrong while counting following.",
+        RSNC.INTERNAL_SERVER_ERROR
+      )
+    );
+  }
+};
+
+// Menghitung jumlah user yang MENGIKUTI seseorang (followers)
+exports.countFollowers = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await db.User.findByPk(userId);
+
+    if (!user) {
+      return next(new AppError("User not found.", RSNC.NOT_FOUND));
+    }
+
+    // Gunakan "magic method" count<Alias> dari Sequelize
+    const followersCount = await user.countFollowers();
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Successfully retrieved followers count.",
+      data: {
+        userId: userId,
+        count: followersCount,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR IN countFollowers 💥", error);
+    return next(
+      new AppError(
+        "Something went wrong while counting followers.",
+        RSNC.INTERNAL_SERVER_ERROR
+      )
+    );
+  }
+};

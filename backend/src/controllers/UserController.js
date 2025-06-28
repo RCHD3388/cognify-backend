@@ -10,9 +10,12 @@ exports.searchUsers = catchAsync(async (req, res, next) => {
 
   if (!q || q.trim() === "") {
     // Jika query kosong, kembalikan array kosong daripada semua user
+    const users = await db.User.findAll({
+      attributes: ["firebaseId", "name", "email", "role"],
+    });
     return setBaseResponse(res, RSNC.OK, {
-      message: "Search query is empty",
-      data: [],
+      message: `Found ${users.length}`,
+      data: users,
     });
   }
 

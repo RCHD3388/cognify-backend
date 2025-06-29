@@ -278,3 +278,32 @@ exports.addNewComment = catchAsync(async (req, res, next) => {
     );
   }
 });
+
+exports.deleteLearningPath = catchAsync(async (req, res, next) => {
+  const { learningPathId } = req.params;
+
+  try {
+    let learningPath = await db.Smart.findByPk(learningPathId);
+    if (!learningPath) {
+      return next(
+        new AppError('Learning path not found', 404),
+        404
+      );
+    }
+    await db.Like.destroy({ where: { smartId: learningPath.id } });
+    await db.Comment.destroy({ where: { smartId: learningPath.id } });
+    await db.smartstep.destroy({ where: { smartId: learningPath.id } });
+    
+    await db.Smart.destroy({ where: { id: learningPath.id } });
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Learning path deleted successfully",
+      data: learningPath.id,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(
+      new AppError('There was an error. Try again later!', 500),
+      500
+    );
+  }
+});

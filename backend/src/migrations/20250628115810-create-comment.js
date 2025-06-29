@@ -12,6 +12,12 @@ module.exports = {
       userId: {
         type: Sequelize.STRING
       },
+      author_name: {
+        type: Sequelize.STRING
+      },
+      author_email: {
+        type: Sequelize.STRING
+      },
       smartId: {
         type: Sequelize.INTEGER
       },

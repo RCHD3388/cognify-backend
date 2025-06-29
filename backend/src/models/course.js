@@ -1,5 +1,5 @@
-'use strict';
-const { Model } = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Course extends Model {
     static associate(models) {
@@ -7,21 +7,23 @@ module.exports = (sequelize, DataTypes) => {
       // Course bisa diikuti oleh banyak User melalui tabel UserCourse.
       Course.belongsToMany(models.User, {
         through: models.UserCourse,
-        foreignKey: 'course_id',
-        otherKey: 'user_id',
-        as: 'EnrolledUsers', // Alias untuk membedakan dengan 'Owner'
+        foreignKey: "course_id",
+        otherKey: "user_id",
+        as: "EnrolledUsers", // Alias untuk membedakan dengan 'Owner'
       });
 
       // 2. Asosiasi One-to-Many (Kepemilikan/Owner)
       // Satu Course dimiliki oleh satu User (sebagai Owner).
       Course.belongsTo(models.User, {
-        foreignKey: 'course_owner', // Kolom di tabel Course yang menyimpan FK
-        as: 'Owner', // Alias untuk asosiasi ini
+        foreignKey: "course_owner", // Kolom di tabel Course yang menyimpan FK
+        as: "Owner", // Alias untuk asosiasi ini
       });
 
       Course.hasMany(models.CourseDiscussion, {
-        foreignKey: 'course_id',
+        foreignKey: "course_id",
       });
+
+      Course.hasMany(models.Rating, { foreignKey: "course_id" });
     }
   }
   Course.init(
@@ -52,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'Course',
+      modelName: "Course",
       timestamps: true,
     }
   );

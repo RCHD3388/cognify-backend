@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   SmartStep.init({
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     smartId: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -217,11 +217,21 @@ exports.likeLearningPath = catchAsync(async (req, res, next) => {
 });
 
 exports.getLearningPathCount = catchAsync(async (req, res, next) => {
+  let { userId } = req.query;
   try {
-    let count = await db.Smart.count();
+    if(!userId) {
+      return next(
+        new AppError('User ID is required', 400),
+        400
+      );
+    }
+
+    let smarts = await db.Smart.findAll({
+      where: { owner: userId },
+    });
     return setBaseResponse(res, RSNC.OK, {
       message: "Learning path count retrieved successfully",
-      data: { count },
+      data: smarts.length,
     });
   } catch (error) {
     console.error(error);

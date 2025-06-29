@@ -40,8 +40,10 @@ exports.parseLearningPath = (text) => {
 
   const paths = [];
   let match;
+  let index = 0;
   while ((match = pathRegex.exec(text)) !== null) {
     paths.push({
+      id: index++,
       smartId: 1,
       stepNumber: Number(match[1]),
       title: match[2].trim(),

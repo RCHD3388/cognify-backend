@@ -60,16 +60,21 @@ const getFormattedResult = (learningPath, learningPathSteps, comments = [], like
     level: learningPath.level,
     tags: learningPath.tags ? learningPath.tags.split(", ").map(tag => tag.trim()) : [],
     likes: likes.map(like => ({
+      id: like.id,
       userId: like.userId,
       smartId: like.smartId,
     })),
     comments: comments.map(comment => ({
+      id: comment.id,
       userId: comment.userId,
+      author_name: comment.author_name,
+      author_email: comment.author_email,
       smartId: comment.smartId,
       content: comment.content,
       createdAt: getDateString(comment.createdAt), // Placeholder for comment creation date
     })), // Placeholder for comments
     steps: learningPathSteps.map(step => ({
+      id: step.id,
       smartId: step.smartId,
       stepNumber: step.stepNumber,
       title: step.title,
@@ -163,12 +168,16 @@ exports.likeLearningPath = catchAsync(async (req, res, next) => {
   const { learningPathId } = req.params;
   const { userId } = req.body; // Assuming user ID is passed in the request body
 
+  console.log("Received like request for learning path:", learningPathId, "by user:", userId);
+
   try {
+    let targetId = 0;
     let existingLike = await db.Like.findOne({
       where: { smartId: learningPathId, userId }
     });
 
     if (existingLike) {
+      targetId = existingLike.id;
       await db.Like.destroy({
         where: {
           smartId: learningPathId, userId
@@ -177,18 +186,22 @@ exports.likeLearningPath = catchAsync(async (req, res, next) => {
       return setBaseResponse(res, RSNC.OK, {
         message: "Learning path unliked successfully",
         data: {
+          likeId: targetId,
           liked: false,
           message: "You have unliked this learning path.",
         },
       });
+
     } else {
-      await db.Like.create({
+      let newLike = await db.Like.create({
         smartId: learningPathId,
         userId
       });
+      targetId = newLike.id;
       return setBaseResponse(res, RSNC.OK, {
         message: "Learning path liked successfully",
         data: {
+          likeId: targetId,
           liked: true,
           message: "You have liked this learning path.",
         },
@@ -209,6 +222,53 @@ exports.getLearningPathCount = catchAsync(async (req, res, next) => {
     return setBaseResponse(res, RSNC.OK, {
       message: "Learning path count retrieved successfully",
       data: { count },
+    });
+  } catch (error) {
+    console.error(error);
+    return next(
+      new AppError('There was an error. Try again later!', 500),
+      500
+    );
+  }
+});
+
+exports.addNewComment = catchAsync(async (req, res, next) => {
+  const { learningPathId } = req.params;
+  const { userId, content } = req.body;
+
+  try {
+    let user = await db.User.findOne({
+      where: { firebaseId: userId }
+    });
+    if (!user) {
+      return next(
+        new AppError('User not found', 404),
+        404
+      );
+    }
+
+    let author_name = user.name;
+    let author_email = user.email;
+
+    let newComment = await db.Comment.create({
+      userId,
+      author_name,
+      author_email,
+      smartId: learningPathId,
+      content
+    });
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Comment added successfully",
+      data: {
+        id: newComment.id,
+        userId: newComment.userId,
+        author_name: newComment.author_name,
+        author_email: newComment.author_email,
+        smartId: newComment.smartId,
+        content: newComment.content,
+        createdAt: getDateString(newComment.createdAt),
+      },
     });
   } catch (error) {
     console.error(error);

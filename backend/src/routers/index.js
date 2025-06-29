@@ -11,5 +11,6 @@ router.use("/course", require("./ratingRoutes"));
 router.use("/users", require("./followRoutes"));
 router.use("/section", require("./sectionRoutes"));
 router.use("/material", require("./materialRoutes"));
+router.use("/midtrans", require("./midtransRoutes"));
 
 module.exports = router;

@@ -7,10 +7,11 @@ router.use("/auth", require("./authRoutes"));
 router.use("/smart", require("./learningPathRoutes"));
 router.use("/profile", require("./profileRoutes"));
 router.use("/course", require("./courseRoutes"));
-router.use("/course", require("./ratingRoutes"));
+router.use("/rating", require("./ratingRoutes"));
 router.use("/users", require("./followRoutes"));
 router.use("/section", require("./sectionRoutes"));
 router.use("/material", require("./materialRoutes"));
 router.use("/midtrans", require("./midtransRoutes"));
+router.use('/transaction', require('./transactionRoutes'));
 
 module.exports = router;

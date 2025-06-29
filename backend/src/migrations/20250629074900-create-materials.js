@@ -20,23 +20,17 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
-      // Foreign Key: Links this material to a section.
+
       section_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: {
-          model: 'Sections', // Name of the target table
-          key: 'id', // Column in the target table to reference
-        },
-        onUpdate: 'CASCADE', // Automatically update if the parent section's ID changes.
-        onDelete: 'CASCADE', // Automatically delete if the parent section is deleted.
       },
-      // Type of Material: Restricted to specific values using ENUM.
+
       material_type: {
         type: Sequelize.ENUM('video', 'document', 'other'),
         allowNull: false,
       },
-      // Position for ordering materials within a section.
+
       position: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -45,7 +39,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      // Timestamps: Automatically managed by Sequelize.
+
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

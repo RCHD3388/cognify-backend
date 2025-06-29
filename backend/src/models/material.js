@@ -24,9 +24,15 @@ module.exports = (sequelize, DataTypes) => {
       section_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: 'Sections', // Name of the target table
+          key: 'id', // Column in the target table to reference
+        },
+        onUpdate: 'CASCADE', // Automatically update if the parent section's ID changes.
+        onDelete: 'CASCADE', // Automatically delete if the parent section is deleted.
       },
       material_type: {
-        type: DataTypes.ENUM('video', 'quiz', 'text_explaination'),
+        type: DataTypes.ENUM('video', 'document', 'other'),
       },
       position: {
         type: DataTypes.INTEGER,

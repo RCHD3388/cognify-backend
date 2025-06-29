@@ -38,10 +38,12 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       User.hasMany(models.Smart, {
-        foreignKey: 'owner',
-        sourceKey: 'firebaseId',
-        as: 'smarts', // opsional
+        foreignKey: "owner",
+        sourceKey: "firebaseId",
+        as: "smarts", // opsional
       });
+
+      User.hasMany(models.Rating, { foreignKey: "user_id" });
     }
   }
   User.init(

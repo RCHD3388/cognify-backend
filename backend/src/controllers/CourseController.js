@@ -222,7 +222,15 @@ exports.createReply = async (req, res) => {
 
   return setBaseResponse(res, RSNC.CREATED, {
     message: `Successfully created reply for discussion post ${parentId}`,
-    data: newReply,
+    data: {
+      id: newReply.id,
+      content: newReply.content,
+      course_id: newReply.course_id,
+      user_id: newReply.user_id,
+      parent_id: newReply.parent_id,
+      createdAt: newReply.createdAt,
+      updatedAt: newReply.updatedAt,
+    },
   });
 };
 

@@ -7,7 +7,7 @@ router.use("/auth", require("./authRoutes"));
 router.use("/smart", require("./learningPathRoutes"));
 router.use("/profile", require("./profileRoutes"));
 router.use("/course", require("./courseRoutes"));
-router.use("/rating", require("./ratingRoutes"));
+router.use("/course", require("./ratingRoutes"));
 router.use("/users", require("./followRoutes"));
 router.use("/section", require("./sectionRoutes"));
 router.use("/material", require("./materialRoutes"));

@@ -12,35 +12,71 @@ const catchAsync = require('../utils/catchAsync');
 exports.createMultipleMaterials = catchAsync(async (req, res, next) => {
   const { sectionId } = req.params;
 
-  let materialsRaw = req.body.materials;
-  let materials;
-  try {
-    materials = JSON.parse(materialsRaw).materials;
-  } catch (error) {
-    materials = materialsRaw;
-  }
+  // ------------------------- BLOK PERBAIKAN MULAI -------------------------
 
-  // Validasi input: pastikan materials adalah sebuah array dan tidak kosong
-  if (!materials || !Array.isArray(materials) || materials.length === 0) {
+  const materialsRaw = req.body.materials;
+  let materialsArray;
+
+  // 1. Validasi awal: pastikan materialsRaw ada dan berupa string
+  if (!materialsRaw || typeof materialsRaw !== 'string') {
     return res.status(400).json({
       status: 'error',
-      message: 'Request body harus berisi array "materials" yang tidak kosong.',
+      message:
+        'Field "materials" wajib diisi dan harus berupa stringified JSON.',
     });
   }
+
+  // 2. Parsing JSON yang lebih robust
+  try {
+    const parsedData = JSON.parse(materialsRaw);
+
+    // Cek jika hasil parse adalah objek yang berisi array {materials: [...]}
+    if (parsedData && Array.isArray(parsedData.materials)) {
+      materialsArray = parsedData.materials;
+    }
+    // Cek jika hasil parse adalah array langsung [...]
+    else if (Array.isArray(parsedData)) {
+      materialsArray = parsedData;
+    }
+    // Jika format tidak sesuai
+    else {
+      throw new Error(
+        'Format JSON tidak valid. Harus berupa array atau objek dengan key "materials".'
+      );
+    }
+  } catch (error) {
+    return res.status(400).json({
+      status: 'error',
+      message: error.message || 'Gagal mem-parsing string JSON "materials".',
+    });
+  }
+
+  // 3. Validasi isi array
+  if (!materialsArray || materialsArray.length === 0) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Array "materials" tidak boleh kosong.',
+    });
+  }
+
+  // ------------------------- BLOK PERBAIKAN SELESAI -------------------------
+
+  // Logika Anda selanjutnya sudah benar, kita hanya perlu mengganti `materials` dengan `materialsArray`
   let fileIndex = 0;
   const files = req.files || [];
 
-  // Tambahkan section_id ke setiap objek material di dalam array
-  const materialsToCreate = materials.map((material) => {
+  const materialsToCreate = materialsArray.map((material) => {
     const newMaterial = {
       ...material,
       section_id: sectionId,
     };
 
+    // Logika ini sudah benar, tidak perlu diubah.
     if (
       ['video', 'document', 'image'].includes(material.material_type) &&
       files[fileIndex]
     ) {
+      // Pastikan Anda menyimpan path ke kolom yang benar, misal `url`
       newMaterial.url = files[fileIndex].path;
       fileIndex++;
     }
@@ -48,7 +84,6 @@ exports.createMultipleMaterials = catchAsync(async (req, res, next) => {
     return newMaterial;
   });
 
-  // 4. Gunakan bulkCreate seperti sebelumnya
   const newMaterials = await db.Material.bulkCreate(materialsToCreate, {
     validate: true,
   });

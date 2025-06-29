@@ -6,5 +6,7 @@ const router = Router();
 router.post("/new", learningPathController.getLearningPaths);
 router.get("/", learningPathController.getAllLearningPaths);
 router.post("/", learningPathController.saveLearningPath);
+router.post("/like/:learningPathId", learningPathController.likeLearningPath);
+router.get("/count", learningPathController.getLearningPathCount);
 
 module.exports = router;

@@ -136,10 +136,13 @@ exports.getAllLearningPaths = catchAsync(async (req, res, next) => {
         as: 'user'
       }],
     });
+    let allSteps = await db.smartstep.findAll();
+    let allComments = await db.Comment.findAll();
+    let allLikes = await db.Like.findAll();
     let formattedLearningPaths = learningPaths.map(learningPath => {
-      let learningPathSteps = learningPath.smartsteps || [];
-      let comments = learningPath.comments || [];
-      let likes = learningPath.likes || [];
+      let learningPathSteps = allSteps.filter(step => step.smartId === learningPath.id) || [];
+      let comments = allComments.filter(comment => comment.smartId === learningPath.id) || [];
+      let likes = allLikes.filter(like => like.smartId === learningPath.id) || [];
       return getFormattedResult(learningPath, learningPathSteps, comments, likes);
     });
     console.log("Formatted learning paths:", formattedLearningPaths);
@@ -152,6 +155,66 @@ exports.getAllLearningPaths = catchAsync(async (req, res, next) => {
     return next(
       new AppError('There was an error. Try again later!', 401),
       401
+    );
+  }
+});
+
+exports.likeLearningPath = catchAsync(async (req, res, next) => {
+  const { learningPathId } = req.params;
+  const { userId } = req.body; // Assuming user ID is passed in the request body
+
+  try {
+    let existingLike = await db.Like.findOne({
+      where: { smartId: learningPathId, userId }
+    });
+
+    if (existingLike) {
+      await db.Like.destroy({
+        where: {
+          smartId: learningPathId, userId
+        }
+      })
+      return setBaseResponse(res, RSNC.OK, {
+        message: "Learning path unliked successfully",
+        data: {
+          liked: false,
+          message: "You have unliked this learning path.",
+        },
+      });
+    } else {
+      await db.Like.create({
+        smartId: learningPathId,
+        userId
+      });
+      return setBaseResponse(res, RSNC.OK, {
+        message: "Learning path liked successfully",
+        data: {
+          liked: true,
+          message: "You have liked this learning path.",
+        },
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return next(
+      new AppError('There was an error. Try again later!', 500),
+      500
+    );
+  }
+});
+
+exports.getLearningPathCount = catchAsync(async (req, res, next) => {
+  try {
+    let count = await db.Smart.count();
+    return setBaseResponse(res, RSNC.OK, {
+      message: "Learning path count retrieved successfully",
+      data: { count },
+    });
+  } catch (error) {
+    console.error(error);
+    return next(
+      new AppError('There was an error. Try again later!', 500),
+      500
     );
   }
 });

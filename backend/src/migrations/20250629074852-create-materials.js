@@ -33,7 +33,7 @@ module.exports = {
       },
       // Type of Material: Restricted to specific values using ENUM.
       material_type: {
-        type: Sequelize.ENUM('video', 'quiz', 'text_explaination'),
+        type: Sequelize.ENUM('video', 'document', 'other'),
         allowNull: false,
       },
       // Position for ordering materials within a section.

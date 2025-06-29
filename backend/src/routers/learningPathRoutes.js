@@ -3,8 +3,7 @@ const learningPathController = require("../controllers/learningPathController");
 
 const router = Router();
 
-router.post("/new", learningPathController.getLearningPaths);
-router.get("/", learningPathController.getAllLearningPaths);
+router.get("/new", learningPathController.getLearningPaths);
 router.post("/", learningPathController.saveLearningPath);
 
 module.exports = router;

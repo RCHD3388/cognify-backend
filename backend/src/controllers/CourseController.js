@@ -3,9 +3,6 @@ const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const { v4: uuidv4 } = require("uuid");
-const { Op } = require("sequelize");
-const { snap } = require('../services/midtransService');
-
 exports.createCourse = catchAsync(async (req, res, next) => {
   const {
     course_name,
@@ -13,7 +10,6 @@ exports.createCourse = catchAsync(async (req, res, next) => {
     course_owner,
     course_price,
     category_id,
-    course_owner_name,
   } = req.body;
 
   let thumbnailUrl = null;
@@ -26,8 +22,7 @@ exports.createCourse = catchAsync(async (req, res, next) => {
     !course_description ||
     !course_owner ||
     !course_price ||
-    !category_id ||
-    !course_owner_name 
+    !category_id
   ) {
     return next(
       new AppError("Missing required course fields", RSNC.BAD_REQUEST)
@@ -43,7 +38,6 @@ exports.createCourse = catchAsync(async (req, res, next) => {
       course_rating: 0.0,
       course_price,
       category_id,
-      course_owner_name,
       thumbnail: thumbnailUrl,
     });
 
@@ -90,58 +84,6 @@ exports.getAllCourse = catchAsync(async (req, res, next) => {
 
 exports.getUserEnrolledCourse = catchAsync(async (req, res, next) => {
   const { firebaseId } = req.params;
-  // Ambil query pencarian dari query parameter, contoh: ?q=design
-  const { q } = req.query;
-
-  try {
-    const user = await db.User.findByPk(firebaseId);
-
-    if (!user) {
-      return setBaseResponse(res, RSNC.NOT_FOUND, {
-        message: "User not found",
-      });
-    }
-
-    // --- LOGIKA PENCARIAN DITAMBAHKAN DI SINI ---
-    const courseQueryOptions = {
-      attributes: [
-        "course_id",
-        "course_name",
-        "course_description",
-        "course_owner",
-        "course_price",
-        "category_id",
-        "course_rating",
-        "thumbnail",
-        "course_owner_name",
-      ],
-      joinTableAttributes: ["createdAt"],
-    };
-
-    // Jika ada query pencarian (q), tambahkan klausa 'where'
-    if (q && q.trim() !== "") {
-      courseQueryOptions.where = {
-        course_name: {
-          [Op.like]: `%${q}%`, // Cari kursus yang namanya mengandung string 'q'
-        },
-      };
-    }
-    // --- AKHIR LOGIKA PENCARIAN ---
-
-    const enrolledCourses = await user.getEnrolledCourses(courseQueryOptions);
-
-    return setBaseResponse(res, RSNC.OK, {
-      message: `Successfully retrieved enrolled courses for user ${user.name}`,
-      data: enrolledCourses,
-    });
-  } catch (error) {
-    console.error(error);
-    return next(new AppError("There was an error. Try again later!"), 500);
-  }
-});
-
-exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
-  const { firebaseId } = req.params;
   try {
     const user = await db.User.findByPk(firebaseId);
 
@@ -152,20 +94,61 @@ exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
       });
     }
 
+    console.log("tes");
+
+    const enrolledCourses = await user.getEnrolledCourses({
+      attributes: [
+        "course_id",
+        "course_name",
+        "course_description",
+        "course_owner",
+        "course_price",
+        "category_id",
+        "course_rating",
+        "thumbnail",
+      ],
+      joinTableAttributes: ["createdAt"],
+    });
+
+    return setBaseResponse(res, RSNC.OK, {
+      message: `Successfully retrieved enrolled courses for user ${user.name}`,
+      data: enrolledCourses,
+    });
+    return setBaseResponse(res, RSNC.CREATED, {
+      message: 'Course created successfully',
+      data: newCourse,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(new AppError('There was an error. Try again later!'), 500);
+  }
+});
+
+exports.getUserCreatedCourse = catchAsync(async (req, res, next) => {
+  const { firebaseId } = req.params;
+  try {
+    const user = await db.User.findByPk(firebaseId);
+
+    if (!user) {
+      return setBaseResponse(res, RSNC.NOT_FOUND, {
+        message: 'User not found',
+        data: course,
+      });
+    }
+
     const ownedCourses = await db.Course.findAll({
       where: {
         course_owner: firebaseId,
       },
       attributes: [
-        "course_id",
-        "course_name",
-        "course_description",
-        "course_rating",
-        "thumbnail",
-        "course_owner",
-        "course_price",
-        "category_id",
-        "course_owner_name",
+        'course_id',
+        'course_name',
+        'course_description',
+        'course_rating',
+        'thumbnail',
+        'course_owner',
+        'course_price',
+        'category_id',
       ],
     });
 
@@ -294,86 +277,3 @@ exports.getDiscussionsForCourse = async (req, res, next) => {
     );
   }
 };
-
-exports.getCourseById = catchAsync(async (req, res, next) => {
-  const { courseId } = req.params; // Ambil courseId dari parameter URL
-
-  try {
-    const course = await db.Course.findByPk(courseId, {
-      // Anda bisa menyertakan relasi lain di sini jika perlu,
-      // misalnya data instructor dari tabel User
-      // include: [{ model: db.User, as: 'Instructor' }]
-    });
-
-    if (!course) {
-      return next(new AppError("Course with that ID not found", RSNC.NOT_FOUND));
-    }
-
-    return setBaseResponse(res, RSNC.OK, {
-      message: "Course details retrieved successfully",
-      data: course, // Kirim data course yang ditemukan
-    });
-
-  } catch (error) {
-    console.error("ERROR FETCHING COURSE BY ID 💥", error);
-    return next(new AppError("There was an error fetching the course. Please try again."), RSNC.INTERNAL_SERVER_ERROR);
-  }
-});
-
-exports.createPayment = catchAsync(async (req, res, next) => {
-  const { courseId } = req.params;
-  const userId = req.body.firebaseId; // Asumsi Anda punya data user dari middleware auth
-
-  // 1. Dapatkan detail course dan user dari database
-  const course = await db.Course.findByPk(courseId);
-  const user = await db.User.findByPk(userId);
-
-  if (!course) {
-    return next(new AppError('Course not found', RSNC.NOT_FOUND));
-  }
-  if (!user) {
-    return next(new AppError('User not found', RSNC.NOT_FOUND));
-  }
-
-  const shortUUID = uuidv4().substring(0, 18); // Ambil 18 karakter pertama dari UUID
-  const orderId = `CGN-${Date.now()}-${shortUUID}`; // Hasilnya sekitar 1 + 4 + 13 + 1 + 18 = 37 karakter
-
-  // ... sisa kode Anda sama persis
-  // 3. Buat parameter untuk Midtrans
-  const parameter = {
-    transaction_details: {
-      order_id: orderId,
-      gross_amount: course.course_price,
-    },
-    item_details: [{
-      id: course.course_id,
-      price: course.course_price,
-      quantity: 1,
-      name: course.course_name,
-    }],
-    customer_details: {
-      first_name: user.name,
-      email: user.email,
-    },
-  };
-
-  // 4. Panggil Midtrans Snap API
-  const transaction = await snap.createTransaction(parameter);
-
-  // 5. Simpan catatan transaksi ke database Anda
-  await db.Transaction.create({
-    order_id: orderId,
-    course_id: courseId,
-    user_id: userId,
-    gross_amount: course.course_price,
-    status: 'pending',
-    payment_token: transaction.token,
-  });
-
-  // 6. Kirim token kembali ke client (aplikasi Android)
-  return setBaseResponse(res, RSNC.CREATED, {
-    message: "Payment token created successfully",
-    token: transaction.token,
-    redirect_url: transaction.redirect_url,
-  });
-});

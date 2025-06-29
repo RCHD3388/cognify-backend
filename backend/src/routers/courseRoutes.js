@@ -44,17 +44,12 @@ router.get(
   '/getUserCourse/:firebaseId',
   courseController.getUserEnrolledCourse
 );
-router.get('/:courseId', courseController.getCourseById);
 router.get('/courses/:firebaseId', courseController.getUserCreatedCourse);
 router.get('/discussion/:courseId', courseController.getDiscussionsForCourse);
 router.post('/discussion/:firebaseId', courseController.createDiscussionPost);
 router.post(
   '/discussion/:parentId/reply/:firebaseId',
   courseController.createReply
-);
-router.post(
-  '/:courseId/payment', 
-  courseController.createPayment
 );
 
 module.exports = router;

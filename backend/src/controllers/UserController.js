@@ -1,17 +1,17 @@
-const { db } = require("../models");
-const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
-const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
-const { Op } = require("sequelize");
+const { db } = require('../models');
+const { setBaseResponse, RSNC } = require('../utils/api/apiResponse');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
+const { Op } = require('sequelize');
 
 exports.searchUsers = catchAsync(async (req, res, next) => {
   // Ambil query pencarian dari query parameter, misal: /api/v1/users/search?q=john
   const { q } = req.query;
 
-  if (!q || q.trim() === "") {
+  if (!q || q.trim() === '') {
     // Jika query kosong, kembalikan array kosong daripada semua user
     const users = await db.User.findAll({
-      attributes: ["firebaseId", "name", "email", "role"],
+      attributes: ['firebaseId', 'name', 'email', 'role'],
     });
     return setBaseResponse(res, RSNC.OK, {
       message: `Found ${users.length}`,
@@ -27,7 +27,7 @@ exports.searchUsers = catchAsync(async (req, res, next) => {
         // Gunakan Op.like untuk MySQL/lainnya.
       },
     },
-    attributes: ["firebaseId", "name", "email", "role"], // Pilih data yang mau dikembalikan
+    attributes: ['firebaseId', 'name', 'email', 'role'], // Pilih data yang mau dikembalikan
     limit: 20, // Batasi hasil agar tidak terlalu banyak
   });
 

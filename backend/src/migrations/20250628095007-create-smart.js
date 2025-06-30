@@ -26,7 +26,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         references: {
-          model: 'users',       // nama tabel tujuan (case-sensitive tergantung DB)
+          model: 'Users',       // nama tabel tujuan (case-sensitive tergantung DB)
           key: 'firebaseId',    // kolom unik/PK di Users
         },
         onUpdate: 'CASCADE',

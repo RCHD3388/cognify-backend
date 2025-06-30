@@ -1,15 +1,15 @@
-const { Router } = require('express');
-const courseController = require('../controllers/CourseController');
+const { Router } = require("express");
+const courseController = require("../controllers/CourseController");
 
 const router = Router();
-const path = require('path');
-const multer = require('multer');
-const fs = require('fs'); // <-- 1. Impor modul 'fs' (File System)
+const path = require("path");
+const multer = require("multer");
+const fs = require("fs"); // <-- 1. Impor modul 'fs' (File System)
 
 // Konfigurasi penyimpanan Multer yang sudah diperbaiki
 const uploadDir = path.join(
   __dirname,
-  '../../public/uploads/course_thumbnails'
+  "../../public/uploads/course_thumbnails"
 );
 
 // Pastikan direktori ada, jika tidak, buat secara rekursif
@@ -34,27 +34,25 @@ const upload = multer({ storage: storage });
 
 // Penggunaan di router tetap sama
 router.post(
-  '/createCourse',
-  upload.single('thumbnail'),
+  "/createCourse",
+  upload.single("thumbnail"),
   courseController.createCourse
 );
 
-router.get('/getAllCourse', courseController.getAllCourse);
+router.get("/getAllCourse", courseController.getAllCourse);
 router.get(
-  '/getUserCourse/:firebaseId',
+  "/getUserCourse/:firebaseId",
   courseController.getUserEnrolledCourse
 );
-router.get('/:courseId', courseController.getCourseById);
-router.get('/courses/:firebaseId', courseController.getUserCreatedCourse);
-router.get('/discussion/:courseId', courseController.getDiscussionsForCourse);
-router.post('/discussion/:firebaseId', courseController.createDiscussionPost);
+router.get("/search", courseController.getCourses);
+router.get("/:courseId", courseController.getCourseById);
+router.get("/courses/:firebaseId", courseController.getUserCreatedCourse);
+router.get("/discussion/:courseId", courseController.getDiscussionsForCourse);
+router.post("/discussion/:firebaseId", courseController.createDiscussionPost);
 router.post(
-  '/discussion/:parentId/reply/:firebaseId',
+  "/discussion/:parentId/reply/:firebaseId",
   courseController.createReply
 );
-router.post(
-  '/:courseId/payment', 
-  courseController.createPayment
-);
+router.post("/:courseId/payment", courseController.createPayment);
 
 module.exports = router;

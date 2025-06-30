@@ -12,5 +12,6 @@ router.use("/users", require("./followRoutes"));
 router.use("/section", require("./sectionRoutes"));
 router.use("/material", require("./materialRoutes"));
 router.use("/midtrans", require("./midtransRoutes"));
+router.use('/transaction', require('./transactionRoutes'));
 
 module.exports = router;

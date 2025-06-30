@@ -18,7 +18,8 @@ exports.createCourse = catchAsync(async (req, res, next) => {
 
   let thumbnailUrl = null;
   if (req.file) {
-    thumbnailUrl = `/uploads/course_thumbnails/${req.file.filename}`;
+    // Ambil URL lengkap dari S3 yang disediakan oleh multer-s3
+    thumbnailUrl = req.file.location;
   }
 
   if (

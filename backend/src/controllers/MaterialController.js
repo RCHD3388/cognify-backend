@@ -1,6 +1,6 @@
-const { db } = require('../models'); // Pastikan path ini benar
-const { setBaseResponse, RSNC } = require('../utils/api/apiResponse');
-const catchAsync = require('../utils/catchAsync');
+const { db } = require("../models"); // Pastikan path ini benar
+const { setBaseResponse, RSNC } = require("../utils/api/apiResponse");
+const catchAsync = require("../utils/catchAsync");
 
 /**
  * Membuat beberapa material sekaligus untuk satu section tertentu.
@@ -18,9 +18,9 @@ exports.createMultipleMaterials = catchAsync(async (req, res, next) => {
   let materialsArray;
 
   // 1. Validasi awal: pastikan materialsRaw ada dan berupa string
-  if (!materialsRaw || typeof materialsRaw !== 'string') {
+  if (!materialsRaw || typeof materialsRaw !== "string") {
     return res.status(400).json({
-      status: 'error',
+      status: "error",
       message:
         'Field "materials" wajib diisi dan harus berupa stringified JSON.',
     });
@@ -46,7 +46,7 @@ exports.createMultipleMaterials = catchAsync(async (req, res, next) => {
     }
   } catch (error) {
     return res.status(400).json({
-      status: 'error',
+      status: "error",
       message: error.message || 'Gagal mem-parsing string JSON "materials".',
     });
   }
@@ -54,7 +54,7 @@ exports.createMultipleMaterials = catchAsync(async (req, res, next) => {
   // 3. Validasi isi array
   if (!materialsArray || materialsArray.length === 0) {
     return res.status(400).json({
-      status: 'error',
+      status: "error",
       message: 'Array "materials" tidak boleh kosong.',
     });
   }
@@ -73,11 +73,11 @@ exports.createMultipleMaterials = catchAsync(async (req, res, next) => {
 
     // Logika ini sudah benar, tidak perlu diubah.
     if (
-      ['video', 'document', 'image'].includes(material.material_type) &&
+      ["video", "document", "image"].includes(material.material_type) &&
       files[fileIndex]
     ) {
       // Pastikan Anda menyimpan path ke kolom yang benar, misal `url`
-      newMaterial.url = files[fileIndex].path;
+      newMaterial.url = files[fileIndex].location;
       fileIndex++;
     }
 

@@ -504,3 +504,68 @@ exports.getCourses = catchAsync(async (req, res, next) => {
     data: formattedCourses,
   });
 });
+
+exports.checkEnrollment = catchAsync(async (req, res, next) => {
+  const { courseId, firebaseId } = req.params;
+
+  // Cek apakah ada entri di tabel join UserCourses
+  const enrollment = await db.UserCourse.findOne({
+    where: {
+      course_id: courseId,
+      user_id: firebaseId,
+    },
+  });
+
+  // Kirim respons boolean: true jika 'enrollment' ditemukan, false jika tidak
+  return setBaseResponse(res, RSNC.OK, {
+    // Backend harus mengembalikan objek JSON, bukan boolean langsung.
+    // Misalnya: { "isEnrolled": true }
+    data: {
+      isEnrolled: !!enrollment, // Tanda '!!' mengubah objek/null menjadi boolean
+    },
+  });
+});
+
+exports.enrollFreeCourse = catchAsync(async (req, res, next) => {
+  const { courseId, firebaseId } = req.params;
+
+  // 1. Validasi: Cari kursus dan pastikan harganya 0
+  const course = await db.Course.findByPk(courseId);
+
+  if (!course) {
+    return next(new AppError("Course not found", RSNC.NOT_FOUND));
+  }
+
+  // Penting: Pastikan kursus ini benar-benar gratis
+  if (course.course_price != 0) {
+    return next(new AppError("This course is not free", RSNC.BAD_REQUEST));
+  }
+
+  // 2. Cek apakah user sudah terdaftar untuk menghindari duplikat
+  const existingEnrollment = await db.UserCourse.findOne({
+    where: {
+      user_id: firebaseId,
+      course_id: courseId,
+    },
+  });
+
+  if (existingEnrollment) {
+    // Anda bisa memilih untuk mengembalikan sukses atau error.
+    // Mengembalikan sukses lebih baik karena tujuannya sudah tercapai.
+    return setBaseResponse(res, RSNC.OK, {
+      message: "User is already enrolled in this course.",
+    });
+  }
+
+  // 3. Daftarkan pengguna ke kursus
+  await db.UserCourse.create({
+    user_id: firebaseId,
+    course_id: courseId,
+  });
+
+  // 4. Kirim respons sukses
+  return setBaseResponse(res, RSNC.CREATED, {
+    message: "Successfully enrolled in the free course!",
+    data: "Berhasil",
+  });
+});

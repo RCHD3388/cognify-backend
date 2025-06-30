@@ -63,5 +63,13 @@ router.post(
   courseController.createReply
 );
 router.post("/:courseId/payment", courseController.createPayment);
+router.get(
+  "/:courseId/check-enrollment/:firebaseId",
+  courseController.checkEnrollment
+);
+router.post(
+  "/:courseId/enroll-free/:firebaseId",
+  courseController.enrollFreeCourse
+);
 
 module.exports = router;
